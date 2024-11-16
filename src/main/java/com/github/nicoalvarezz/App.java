@@ -9,7 +9,7 @@ import com.github.nicoalvarezz.worker.MasterWorker;
  */
 public class App {
     public static void main(String[] args) {
-        BaseWorker master = new MasterWorker(new Config(8080, "127.0.0.1"));
+        BaseWorker master = new MasterWorker(new Config(8080, "127.0.0.1", 2));
         master.start();
     }
 }

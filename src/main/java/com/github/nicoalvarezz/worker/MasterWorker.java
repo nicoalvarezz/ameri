@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.nio.ByteBuffer;
 
 public class MasterWorker implements BaseWorker {
     private final Config config;
@@ -26,12 +29,12 @@ public class MasterWorker implements BaseWorker {
         while (true) {
             try {
                 SocketChannel clientSocket = socket.accept();
+                ExecutorService executor = Executors.newFixedThreadPool(config.getNumWorkers());
                 if (clientSocket != null) {
-                    System.out.println("Accepted connection from " + clientSocket.getRemoteAddress());
-                    clientSocket.close(); // For now, we close immediately
+                    System.out.println("hello?");
+                    executor.submit(() -> handleRequest(clientSocket));
                 }
-                Thread.sleep(100); // Just to prevent a tight loop
-            } catch (IOException | InterruptedException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -53,5 +56,14 @@ public class MasterWorker implements BaseWorker {
             e.printStackTrace();
         }
         return socket;
+    }
+
+    private void handleRequest(SocketChannel clientSocket) {
+        ByteBuffer buffer = ByteBuffer.wrap("HTTP/1.1 200 OK\r\n\r\nHello, World!".getBytes());
+        try {
+            clientSocket.write(buffer);
+        } catch (IOException e){
+            System.err.println("Error handling request: " + e.getMessage());
+        }
     }
 }
