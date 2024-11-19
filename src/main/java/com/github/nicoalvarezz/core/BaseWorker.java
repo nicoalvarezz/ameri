@@ -1,4 +1,4 @@
-package com.github.nicoalvarezz.worker;
+package com.github.nicoalvarezz.core;
 
 public interface BaseWorker {
 
