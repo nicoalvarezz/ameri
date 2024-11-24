@@ -1,10 +1,10 @@
 package com.github.nicoalvarezz.config;
 
-public class Config {
+public class ConfigManager {
     private final int port;
     private final String address;
 
-    public Config(int port, String address) {
+    public ConfigManager(int port, String address) {
         this.port = port;
         this.address = address;
     }

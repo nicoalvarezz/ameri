@@ -1,51 +1,40 @@
 package com.github.nicoalvarezz.core;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-public class VirtualWorker implements BaseWorker {
+public class VirtualWorker {
+    private final SocketChannel clientChannel;
 
-    SocketChannel clientChannel;
-
-    /**
-     * Buffer size for reading requests and writing responses
-     */
-    private static final int BUFFER_SIZE = 8192;
-
-    public VirtualWorker(SocketChannel socket) {
-        this.clientChannel = socket;
+    public VirtualWorker(SocketChannel clientChannel) {
+        this.clientChannel = clientChannel;
+        // basic config stuff
+        // buffer pool
+        // metrics
+        // timeout
     }
 
-    @Override
     public void run() {
-        System.out.println("Handling request on thread: " + Thread.currentThread());
-        ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+        // here we will load balance the connection and pick an upstream server
+        // for now is a simple architecture, so will only have one upstream connection
+        processRequest();
+    }
 
-        try {
-            int bytesRead = clientChannel.read(buffer);
-            if (bytesRead == -1) {
-                System.out.println("Client closed connection.");
-                return;
-            }
+    private void processRequest() {
+        while(!Thread.currentThread().isInterrupted()) {
+            // read request from the client --- extract request context
 
-            buffer.flip(); // prepare buffer for reading
-            String clientRequest = new String(buffer.array(), 0, buffer.limit());
-            System.out.printf("Received request: %s%n", clientRequest);
-
-            // Simple response (this can be extended for proper request routing and proxying)
-            String httpResponse = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, world!";
-            buffer.clear(); // Clear the buffer
-            buffer.put(httpResponse.getBytes());
-            buffer.flip(); // Prepare buffer for writing
-            clientChannel.write(buffer); // Send response
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 
-    @Override
-    public void handleSignal() {
+    private void readRequest() {
+
+    }
+
+    private void forwardRequest() {
+
+    }
+
+    private void sendResponse() {
 
     }
 }

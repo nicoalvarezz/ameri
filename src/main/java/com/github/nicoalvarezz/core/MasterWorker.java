@@ -1,46 +1,45 @@
 package com.github.nicoalvarezz.core;
 
-import com.github.nicoalvarezz.config.Config;
+import com.github.nicoalvarezz.config.ConfigManager;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
-public class MasterWorker implements BaseWorker {
-    private final Config config;
+public class MasterWorker {
+    private final ServerSocketChannel serverChannel;
+    private final ConfigManager config;
+    private volatile boolean running;
+//    private final Selector selector;
 
-    public MasterWorker(Config config) {
+    public MasterWorker(ConfigManager config) throws IOException {
         this.config = config;
+        this.serverChannel = ServerSocketChannel.open();
+        this.serverChannel.bind(new InetSocketAddress(config.getPort()));
+        this.serverChannel.configureBlocking(false);
+//        this.selector = Selector.open();
+//        this.serverChannel.register(selector, SelectionKey.OP_ACCEPT);
     }
 
-    @Override
-    public void run() {
-        System.out.println("Starting MasterWorker on port: " + config.getPort());
-
-        try (ServerSocketChannel serverSocket = ServerSocketChannel.open()) {
-            serverSocket.bind(new InetSocketAddress(config.getAddress(), config.getPort()));
-            serverSocket.configureBlocking(false); // non-blocking
-            while (true) {
-                SocketChannel clientSocket = serverSocket.accept();
-                if (clientSocket != null) {
-                    System.out.println("Connection accepted: " + clientSocket);
-                    Thread.ofVirtual().start(() -> handleRequest(clientSocket));
+    public void start() {
+        Thread.startVirtualThread(() -> {
+            while (running) {
+                try {
+                    SocketChannel clientChannel = serverChannel.accept();
+                    Thread.startVirtualThread(() -> handelConnection(clientChannel));
+                } catch (IOException e) {
+                    if (running) {
+                        // log error and continue
+                    }
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        });
     }
 
-    @Override
-    public void handleSignal() {
-
-    }
-
-
-    private void handleRequest(SocketChannel socket) {
-        BaseWorker worker = new VirtualWorker(socket);
+    private void handelConnection(SocketChannel clientChannel) {
+        // we create a new virtual worker per new request
+        VirtualWorker worker = new VirtualWorker(clientChannel);
         worker.run();
     }
 }
