@@ -1,12 +1,9 @@
 package com.github.nicoalvarezz
 
-class App {
-    val greeting: String
-        get() {
-            return "Hello World!"
-        }
-}
+import com.github.nicoalvarezz.core.ConfigurationManager
+import com.github.nicoalvarezz.core.MasterWorker
 
 fun main() {
-    println(App().greeting)
+    val masterWorker = MasterWorker(ConfigurationManager())
+    masterWorker.start()
 }
