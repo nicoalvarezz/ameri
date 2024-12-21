@@ -37,7 +37,10 @@ class MasterWorker(config: ConfigurationManager) {
         // gracefully shut down active virtual workers
     }
 
+    fun getLocalAddress() = serverChannel.localAddress
+
     private fun handleNewConnection(clientChannel: SocketChannel) {
         // create a new virtual thread to handle new connection
+        println("Connected: ${clientChannel.remoteAddress}")
     }
 }
